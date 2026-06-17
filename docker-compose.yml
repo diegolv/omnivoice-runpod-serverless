@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  omnivoice-runpod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sfdiego/omnivoice-runpod-serverless:latest
