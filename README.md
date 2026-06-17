@@ -65,6 +65,21 @@ docker-compose build
 docker run --gpus all -p 8000:8000 sfdiego/omnivoice-runpod-serverless:latest
 ```
 
+## 🐍 Testando a API via Python (`pod.py`)
+
+O repositório inclui um script cliente pronto para testar a sua API hospedada no RunPod. Ele conta com suporte a **polling** (aguarda o processamento terminar de forma segura mesmo em casos de demoras no servidor devido ao *Cold Start*).
+
+Para usá-lo, você precisa:
+1. Ter um arquivo de áudio curto de referência (`.mp3` ou `.wav`) na mesma pasta, nomeado como `sua_voz_10s.mp3`.
+2. Ter a sua chave de API do RunPod exportada como variável de ambiente no terminal por segurança.
+
+Como executar o teste:
+```bash
+export RUNPOD_API_KEY="coloque_sua_api_key_aqui"
+python3 pod.py
+```
+O script fará o empacotamento do seu áudio, enviará ao RunPod, aguardará a conclusão e salvará o resultado final pronto para ser ouvido como `resultado_voz_clonada.wav`.
+
 ## 🏗️ Estrutura do Projeto
 
 *   `app.py`: O "cérebro". Inicializa o OmniVoice, decodifica entradas, processa a clonagem e envia as respostas limpas.
