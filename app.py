@@ -1,5 +1,6 @@
 import base64
 import os
+import uuid
 import torch
 import runpod
 from omnivoice import OmniVoice
@@ -33,7 +34,8 @@ def handler(job):
         return {"error": "O modelo OmniVoice não foi carregado corretamente na inicialização."}
 
     # 1. Decodificar o áudio de referência recebido do script local
-    temp_ref_path = "/tmp/ref_input.mp3" # Salvando como MP3 para evitar confusão de formato
+    job_id = job.get("id", str(uuid.uuid4()))
+    temp_ref_path = f"/tmp/ref_input_{job_id}.mp3" # Salvando como MP3 para evitar confusão de formato
     try:
         with open(temp_ref_path, "wb") as f:
             f.write(base64.b64decode(reference_audio_base64))
@@ -41,7 +43,7 @@ def handler(job):
         return {"error": f"Falha ao decodificar áudio Base64: {str(e)}"}
 
     # 2. Executar a inferência de clonagem com o OmniVoice
-    temp_out_path = "/tmp/output_voice.wav"
+    temp_out_path = f"/tmp/output_voice_{job_id}.wav"
     try:
         # Gera o áudio usando o nome correto de parâmetro 'ref_audio'
         audio_data = model.generate(
