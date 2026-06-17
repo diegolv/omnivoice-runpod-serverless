@@ -26,13 +26,19 @@ A comunicação com o *worker* Serverless no RunPod ocorre enviando e recebendo 
   "input": {
     "text": "Olá, esta é uma demonstração de clonagem de voz utilizando inteligência artificial.",
     "language": "pt",
-    "reference_audio": "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA..." 
+    "reference_audio": "UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA...",
+    "speed": 1.0,
+    "num_step": 40,
+    "guidance_scale": 2.5
   }
 }
 ```
 *   `text`: O texto a ser falado pela IA.
 *   `language`: O idioma desejado (padrão é `"pt"`).
 *   `reference_audio`: A string de áudio em formato Base64 da voz base que você quer clonar.
+*   `speed` (Opcional): Velocidade da fala (Padrão: `1.0`).
+*   `num_step` (Opcional): Passos de qualidade da difusão. Valores maiores geram áudios mais limpos, mas demoram mais (Padrão: `32`).
+*   `guidance_scale` (Opcional): Força de aderência à voz/texto (Padrão: `2.0`).
 
 ### Exemplo de Resposta (Saída)
 
@@ -67,18 +73,28 @@ docker run --gpus all -p 8000:8000 sfdiego/omnivoice-runpod-serverless:latest
 
 ## 🐍 Testando a API via Python (`pod.py`)
 
-O repositório inclui um script cliente pronto para testar a sua API hospedada no RunPod. Ele conta com suporte a **polling** (aguarda o processamento terminar de forma segura mesmo em casos de demoras no servidor devido ao *Cold Start*).
+O repositório inclui um script cliente avançado (`pod.py`) pronto para testar a sua API hospedada no RunPod. Ele conta com:
+*   **Fatiamento Inteligente:** Divide textos enormes para não estourar o limite de payload da API.
+*   **Polling Automático:** Aguarda o processamento terminar de forma segura mesmo em casos de demoras no servidor devido ao *Cold Start*.
+*   **Costura de Áudio:** Emenda os retornos fatiados usando a biblioteca nativa `wave`, gerando um arquivo de áudio único no final.
 
-Para usá-lo, você precisa:
-1. Ter um arquivo de áudio curto de referência (`.mp3` ou `.wav`) na mesma pasta, nomeado como `sua_voz_10s.mp3`.
-2. Ter a sua chave de API do RunPod exportada como variável de ambiente no terminal por segurança.
-
-Como executar o teste:
-```bash
-export RUNPOD_API_KEY="coloque_sua_api_key_aqui"
-python3 pod.py
+### Configuração
+Crie um arquivo `.env` na raiz do projeto (baseado no `.env.example`) com as suas credenciais:
+```env
+RUNPOD_API_KEY="sua_api_key_aqui"
+RUNPOD_ENDPOINT_ID="seu_endpoint_id_aqui"
 ```
-O script fará o empacotamento do seu áudio, enviará ao RunPod, aguardará a conclusão e salvará o resultado final pronto para ser ouvido como `resultado_voz_clonada.wav`.
+
+### Como executar o teste
+O script funciona via linha de comando (CLI), permitindo trocar dinamicamente o texto e a voz:
+
+```bash
+# Uso básico:
+python3 pod.py -t input.txt -a sua_voz_10s.mp3
+
+# Configurando velocidade e qualidade fina de áudio:
+python3 pod.py -t input.txt -a voz.mp3 --speed 1.2 --steps 50 --guidance 3.0
+```
 
 ## 🏗️ Estrutura do Projeto
 
