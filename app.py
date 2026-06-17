@@ -33,7 +33,7 @@ def handler(job):
         return {"error": "O modelo OmniVoice não foi carregado corretamente na inicialização."}
 
     # 1. Decodificar o áudio de referência recebido do script local
-    temp_ref_path = "/tmp/ref_input.wav"
+    temp_ref_path = "/tmp/ref_input.mp3" # Salvando como MP3 para evitar confusão de formato
     try:
         with open(temp_ref_path, "wb") as f:
             f.write(base64.b64decode(reference_audio_base64))
@@ -43,16 +43,34 @@ def handler(job):
     # 2. Executar a inferência de clonagem com o OmniVoice
     temp_out_path = "/tmp/output_voice.wav"
     try:
-        # Gera o áudio (retorna os dados puros)
+        # Gera o áudio usando o nome correto de parâmetro 'ref_audio'
         audio_data = model.generate(
             text=text,
             language=language,
-            reference_audio=temp_ref_path
+            ref_audio=temp_ref_path
         )
         
+        # Tratamento robusto do formato de retorno do modelo
+        if isinstance(audio_data, tuple):
+            audio_array = audio_data[0]
+            sr = audio_data[1] if len(audio_data) > 1 else 16000
+        elif isinstance(audio_data, dict):
+            audio_array = audio_data.get("audio", audio_data.get("wav"))
+            sr = audio_data.get("sample_rate", audio_data.get("sr", 16000))
+        else:
+            audio_array = audio_data
+            sr = 16000
+            
+        if hasattr(audio_array, 'cpu'):
+            audio_array = audio_array.cpu().numpy()
+            
+        # Removemos dimensões extras (ex: de [1, N] para [N]) para o soundfile não reclamar
+        import numpy as np
+        if isinstance(audio_array, np.ndarray):
+            audio_array = audio_array.squeeze()
+            
         # Salva os dados gerados no arquivo temporário de saída
-        # O modelo costuma retornar um tensor ou array numpy. Ajustamos para salvar.
-        sf.write(temp_out_path, audio_data.cpu().numpy() if hasattr(audio_data, 'cpu') else audio_data, 16000)
+        sf.write(temp_out_path, audio_array, sr)
         
     except Exception as e:
         return {"error": f"Erro durante a geração do áudio pela IA: {str(e)}"}
