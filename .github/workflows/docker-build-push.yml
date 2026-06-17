@@ -45,6 +45,6 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: sfdiego/omnivoice-runpod-serverless:latest
-        # Usamos cache para que os próximos builds sejam muito mais rápidos
-        cache-from: type=registry,ref=sfdiego/omnivoice-runpod-serverless:buildcache
-        cache-to: type=registry,ref=sfdiego/omnivoice-runpod-serverless:buildcache,mode=max
+        provenance: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
