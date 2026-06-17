@@ -51,15 +51,18 @@ def handler(job):
         )
         
         # Tratamento robusto do formato de retorno do modelo
-        if isinstance(audio_data, tuple):
+        if isinstance(audio_data, list):
             audio_array = audio_data[0]
-            sr = audio_data[1] if len(audio_data) > 1 else 16000
+            sr = 24000
+        elif isinstance(audio_data, tuple):
+            audio_array = audio_data[0]
+            sr = audio_data[1] if len(audio_data) > 1 else 24000
         elif isinstance(audio_data, dict):
             audio_array = audio_data.get("audio", audio_data.get("wav"))
-            sr = audio_data.get("sample_rate", audio_data.get("sr", 16000))
+            sr = audio_data.get("sample_rate", audio_data.get("sr", 24000))
         else:
             audio_array = audio_data
-            sr = 16000
+            sr = 24000
             
         if hasattr(audio_array, 'cpu'):
             audio_array = audio_array.cpu().numpy()
