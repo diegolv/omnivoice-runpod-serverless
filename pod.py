@@ -59,6 +59,9 @@ for idx, chunk in enumerate(chunks):
             "text": chunk,
             "language": "pt",
             "reference_audio": audio_base64,
+            "speed": 1.0,               # Controle de velocidade (1.0 = normal, 1.2 = mais rápido)
+            "num_step": 40,             # Qualidade de geração (padrão 32, 40+ tira ruidos, demora mais)
+            "guidance_scale": 2.5       # Força a IA a seguir estritamente o seu tom de voz (padrão 2.0)
         }
     }
     

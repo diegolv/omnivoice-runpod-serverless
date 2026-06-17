@@ -23,12 +23,17 @@ def handler(job):
     """Função que gerencia as requisições do RunPod Serverless"""
     job_input = job["input"]
     
-    text = job_input.get("text")
+    text = job_input.get("text", "")
     language = job_input.get("language", "pt")
-    reference_audio_base64 = job_input.get("reference_audio")
+    reference_audio_base64 = job_input.get("reference_audio", "")
     
+    # Parâmetros Avançados de Qualidade/Liberdade
+    speed = job_input.get("speed", 1.0)
+    num_step = job_input.get("num_step", 32)
+    guidance_scale = job_input.get("guidance_scale", 2.0)
+
     if not text or not reference_audio_base64:
-        return {"error": "Dados incompletos. Informe o 'text' e o 'reference_audio' em base64."}
+        return {"error": "Faltam os campos obrigatórios 'text' ou 'reference_audio'."}
         
     if model is None:
         return {"error": "O modelo OmniVoice não foi carregado corretamente na inicialização."}
@@ -45,11 +50,14 @@ def handler(job):
     # 2. Executar a inferência de clonagem com o OmniVoice
     temp_out_path = f"/tmp/output_voice_{job_id}.wav"
     try:
-        # Gera o áudio usando o nome correto de parâmetro 'ref_audio'
+        # Gera o áudio passando as configurações finas vindas do pod.py
         audio_data = model.generate(
             text=text,
             language=language,
-            ref_audio=temp_ref_path
+            ref_audio=temp_ref_path,
+            speed=speed,
+            num_step=num_step,
+            guidance_scale=guidance_scale
         )
         
         # Tratamento robusto do formato de retorno do modelo
