@@ -15,12 +15,11 @@ RUN apt-get update && apt-get install -y \
 # 4. Atualiza o gerenciador de pacotes do Python (pip)
 RUN pip3 install --no-cache-dir --upgrade pip
 
-# 5. Instala os pacotes normais direto do repositório padrão do Python (PyPI)
-# Separamos aqui para evitar o erro de "requirement runpod not found"
-RUN pip3 install --no-cache-dir runpod soundfile omnivoice
-
-# 6. Instala o PyTorch e pacotes de áudio com suporte a GPU direto do repositório oficial do PyTorch (CUDA 12.1)
+# 5. Instala o PyTorch e pacotes de áudio PRIMEIRO com suporte a GPU (CUDA 12.1)
 RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# 6. DEPOIS instala os pacotes normais (assim o omnivoice aproveita o torch correto)
+RUN pip3 install --no-cache-dir runpod soundfile omnivoice
 
 # 7. Configura o diretório de trabalho dentro do container
 WORKDIR /app
